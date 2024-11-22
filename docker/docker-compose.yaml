@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   spark-master:
-    container_name: da-spark-master
+    container_name: spark-master
     build: 
       context: .
       dockerfile: Dockerfile
@@ -19,14 +19,13 @@ services:
     env_file:
       - .env.spark
     ports:
-      - '<your host IP>:9090:8080'
-      - '<your host IP>:7077:7077'
+      - '192.168.1.13:8080:8080'
+      - '192.168.1.13:7077:7077'
     networks:
       - spark-network
 
-
   spark-history-server:
-    container_name: da-spark-history
+    container_name: spark-history
     build: 
       context: .
       dockerfile: Dockerfile
@@ -43,6 +42,7 @@ services:
       - spark-network
 
   spark-worker:
+    container_name: spark-worker
     build: 
       context: .
       dockerfile: Dockerfile
@@ -55,8 +55,32 @@ services:
       - ./book_data:/opt/spark/data
       - ./spark_apps:/opt/spark/apps
       - spark-logs:/opt/spark/spark-events
+    ports:
+      - '8081:8081'
     networks:
       - spark-network
+
+  jupyter:
+    container_name: jupyter
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../notebooks:/opt/spark/notebooks
+    entrypoint: [
+      'jupyter',
+      'lab',
+      '--ip',
+      '0.0.0.0',
+      '--port',
+      '8888',
+      '--allow-root'
+    ]
+    ports:
+      - '8888:8888'
+    networks:
+      - spark-network
+
 volumes:
   spark-logs:
 
